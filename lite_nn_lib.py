@@ -4,35 +4,30 @@ Simple NN library
 
 import numpy as np
 
-from activation_layers import ActivationLayer, SigmoidLayer, ReluLayer
-from cost_functions import CostFunction, SigmoidCrossEntropy
+from activation_layers import SigmoidLayer, ReluLayer
+from cost_functions import SigmoidCrossEntropy
+from initilizers import HeInit
 
 class NN:
     '''
     Implements fully-connected neural networks
     '''
 
-    def __init__(self, layer_dims, activation_fns=None, cost_fn=None):
+    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit()):
         self.L = len(layer_dims)
         self.layer_dims = layer_dims
         self.activation_fns = activation_fns if activation_fns is not None else [ReluLayer() for l in range(self.L - 2)] + [SigmoidLayer()] 
         self.cost_fn = cost_fn if cost_fn is not None else SigmoidCrossEntropy()
+        self.initializer = initializer
         self.parameters = {}
 
         assert (len(self.activation_fns) == len(self.layer_dims) - 1)
-        for fns in self.activation_fns:
-            assert (isinstance(fns, ActivationLayer))
-        
-        assert (isinstance(self.cost_fn, CostFunction))
     
     def initialize_params(self):
         '''
         Initialize model parameters
         '''
-        self.parameters.clear()
-        for l in range(1, self.L):
-            self.parameters['W' + str(l)] = np.random.randn(self.layer_dims[l], self.layer_dims[l-1]) * 0.01
-            self.parameters['b' + str(l)] = np.zeros((self.layer_dims[l], 1))
+        self.parameters = self.initializer.get_initial_params(self.L, self.layer_dims)
     
     @staticmethod
     def linear_forward(A_prev, W, b):
