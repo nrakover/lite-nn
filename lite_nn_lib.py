@@ -166,15 +166,7 @@ class NN:
         predictions = (AL > threshold) * 1
 
         return predictions
-
-    @staticmethod
-    def backward(dA, activation_cache):
-        """
-        Args:
-            dA (np.array): derivative of cost function with respect to the activation
-            activation_cache (tuple): cache created during forward pass
-
-        Returns:
-            dZ (np.array): derivative of cost function with respect to the linear output
-        """
-        pass
+    
+    def score(self, X, Y, threshold=0.5):
+        predictions = self.predict(X, threshold)
+        return np.sum(predictions == Y) / predictions.size

@@ -14,6 +14,17 @@ class ActivationLayer:
             activation_cache (tuple): cache to be passed in to backwards pass
         """
         pass
+    @staticmethod
+    def backward(dA, activation_cache):
+        """
+        Args:
+            dA (np.array): derivative of cost function with respect to the activation
+            activation_cache (tuple): cache created during forward pass
+
+        Returns:
+            dZ (np.array): derivative of cost function with respect to the linear output
+        """
+        pass
 
 #######################################
 #######     Implementations     #######
