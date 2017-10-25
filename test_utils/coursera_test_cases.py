@@ -235,5 +235,49 @@ def print_grads(grads):
     print ("dA1 = "+ str(grads["dA2"])) # this is done on purpose to be consistent with lecture where we normally start with A0
                                         # in this implementation we started with A1, hence we bump it up by 1. 
     
-    
-    
+def compute_cost_with_regularization_test_case():
+    np.random.seed(1)
+    Y_assess = np.array([[1, 1, 0, 1, 0]])
+    W1 = np.random.randn(2, 3)
+    b1 = np.random.randn(2, 1)
+    W2 = np.random.randn(3, 2)
+    b2 = np.random.randn(3, 1)
+    W3 = np.random.randn(1, 3)
+    b3 = np.random.randn(1, 1)
+    parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2, "W3": W3, "b3": b3}
+    a3 = np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]])
+
+    layer_dims = [3, 2, 3, 1]
+    l2_lambda = 0.1
+    expected_cost = 1.78648594516
+    return a3, Y_assess, parameters, layer_dims, l2_lambda, expected_cost
+
+def backward_propagation_with_regularization_test_case():
+    np.random.seed(1)
+    X_assess = np.random.randn(3, 5)
+    Y_assess = np.array([[1, 1, 0, 1, 0]])
+    Z1 = np.array([[-1.52855314,  3.32524635,  2.13994541,  2.60700654, -0.75942115],[-1.98043538,  4.1600994 ,  0.79051021,  1.46493512, -0.45506242]])
+    A1 = np.array([[ 0.        ,  3.32524635,  2.13994541,  2.60700654,  0.        ],[ 0.        ,  4.1600994 ,  0.79051021,  1.46493512,  0.        ]])
+    W1 = np.array([[-1.09989127, -0.17242821, -0.87785842],[ 0.04221375,  0.58281521, -1.10061918]])
+    b1 = np.array([[ 1.14472371],[ 0.90159072]])
+    Z2 = np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],[-0.69166075, -3.47645987, -2.25194702, -2.65416996, -0.69166075],[-0.39675353, -4.62285846, -2.61101729, -3.22874921, -0.39675353]])
+    A2 = np.array([[ 0.53035547,  5.94892323,  2.31780174,  3.16005701,  0.53035547],[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ],[ 0.        ,  0.        ,  0.        ,  0.        ,  0.        ]])
+    W2 = np.array([[ 0.50249434,  0.90085595],[-0.68372786, -0.12289023],[-0.93576943, -0.26788808]])
+    b2 = np.array([[ 0.53035547],[-0.69166075],[-0.39675353]])
+    Z3 = np.array([[-0.3771104 , -4.10060224, -1.60539468, -2.18416951, -0.3771104 ]])
+    A3 = np.array([[ 0.40682402,  0.01629284,  0.16722898,  0.10118111,  0.40682402]])
+    W3 = np.array([[-0.6871727 , -0.84520564, -0.67124613]])
+    b3 = np.array([[-0.0126646]])
+
+    caches = [
+        ((X_assess, W1, b1), Z1),
+        ((A1, W2, b2), Z2),
+        ((A2, W3, b3), Z3)
+    ]
+
+    layer_dims = [3, 2, 3, 1]
+    l2_lambda = 0.7
+    expected_dW1 = np.array([[-0.25604647,  0.1229883,  -0.28297132], [-0.17706304,  0.345361,  -0.44105717]])
+    expected_dW2 = np.array([[ 0.79276497,  0.85133932], [-0.0957219,  -0.01720463], [-0.13100772, -0.03750433]])
+    expected_dW3 = np.array([[-1.77691375, -0.11832879, -0.09397446]])
+    return A3, Y_assess, caches, layer_dims, l2_lambda, expected_dW1, expected_dW2, expected_dW3

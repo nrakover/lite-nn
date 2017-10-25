@@ -7,18 +7,20 @@ import numpy as np
 from activation_layers import SigmoidLayer, ReluLayer
 from cost_functions import SigmoidCrossEntropy
 from initilizers import HeInit
+import utils.regularization as reg_utils
 
 class NN:
     '''
     Implements fully-connected neural networks
     '''
 
-    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit()):
+    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), l2_lambda=0.0):
         self.L = len(layer_dims)
         self.layer_dims = layer_dims
         self.activation_fns = activation_fns if activation_fns is not None else [ReluLayer() for l in range(self.L - 2)] + [SigmoidLayer()] 
         self.cost_fn = cost_fn if cost_fn is not None else SigmoidCrossEntropy()
         self.initializer = initializer
+        self.l2_lambda = l2_lambda
         self.parameters = {}
 
         assert (len(self.activation_fns) == len(self.layer_dims) - 1)
@@ -71,7 +73,7 @@ class NN:
         '''
         Computes the cost of the final activation given the configured cost function
         '''
-        return self.cost_fn.compute_cost(AL, Y)
+        return self.cost_fn.compute_cost(AL, Y) + reg_utils.compute_L2_reg_cost(self.l2_lambda, self.parameters, self.L, AL.shape[1])
     
     def compute_cost_derivative(self, AL, Y):
         '''
@@ -80,14 +82,14 @@ class NN:
         return self.cost_fn.compute_cost_derivative(AL, Y)
     
     @staticmethod
-    def linear_backward(dZ, cache):
+    def linear_backward(dZ, cache, l2_lambda):
         '''
         Compute dA_prev, dW, and db given dZ and the linear_cache
         '''
         A_prev, W, b = cache
         m = A_prev.shape[1]
 
-        dW = (1.0/m) * np.dot(dZ, A_prev.T)
+        dW = (1.0/m) * np.dot(dZ, A_prev.T) + (l2_lambda / m) * W
         db = (1.0/m) * np.sum(dZ, axis=1, keepdims=True)
         dA_prev = np.dot(W.T, dZ)
 
@@ -110,7 +112,7 @@ class NN:
             linear_cache, activation_cache = caches[l-1]
             
             dZ = self.activation_fns[l-1].backward(dA, activation_cache)
-            dA_prev, dW, db = NN.linear_backward(dZ, linear_cache)
+            dA_prev, dW, db = NN.linear_backward(dZ, linear_cache, self.l2_lambda)
 
             grads['dA' + str(l-1)] = dA_prev
             grads['dW' + str(l)] = dW

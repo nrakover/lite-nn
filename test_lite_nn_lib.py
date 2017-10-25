@@ -10,10 +10,11 @@ import test_utils.coursera_test_cases as test_cases
 
 class TestNN(unittest.TestCase):
     
-    def assertDeepEquals(self, A, B):
-        self.assertTupleEqual(A.shape, B.shape)
+    def assertNpArrayEquals(self, A, B, msg=None):
+        shape_msg = None if msg is None else msg + " -- shape mismatch"
+        self.assertTupleEqual(A.shape, B.shape, msg=shape_msg)
         delta = np.abs(A - B)
-        self.assertTrue((delta < 0.00000001).all())
+        self.assertTrue((delta < 0.00000001).all(), msg=msg)
     
     def test_compute_cost(self):
         Y, AL, expected = test_cases.compute_cost_test_case()
@@ -24,14 +25,14 @@ class TestNN(unittest.TestCase):
     def test_linear_forward(self):
         A, W, b, expected = test_cases.linear_forward_test_case()
         Z, _ = nn.NN.linear_forward(A, W, b)
-        self.assertDeepEquals(expected, Z)
+        self.assertNpArrayEquals(expected, Z)
     
     def test_linear_backward(self):
         dZ, linear_cache, expected_dA_prev, expected_dW, expected_db = test_cases.linear_backward_test_case()
-        dA_prev, dW, db = nn.NN.linear_backward(dZ, linear_cache)
-        self.assertDeepEquals(expected_dA_prev, dA_prev)
-        self.assertDeepEquals(expected_dW, dW)
-        self.assertDeepEquals(expected_db, db)
+        dA_prev, dW, db = nn.NN.linear_backward(dZ, linear_cache, 0)
+        self.assertNpArrayEquals(expected_dA_prev, dA_prev)
+        self.assertNpArrayEquals(expected_dW, dW)
+        self.assertNpArrayEquals(expected_db, db)
     
     def test_update_parameters(self):
         layer_dims, parameters, grads, expected_W1, expected_b1, expected_W2, expected_b2 = test_cases.update_parameters_test_case()
@@ -39,10 +40,10 @@ class TestNN(unittest.TestCase):
         model.parameters = parameters
 
         model.update_parameters(grads, 0.1)
-        self.assertDeepEquals(model.parameters['W1'], expected_W1)
-        self.assertDeepEquals(model.parameters['b1'], expected_b1)
-        self.assertDeepEquals(model.parameters['W2'], expected_W2)
-        self.assertDeepEquals(model.parameters['b2'], expected_b2)
+        self.assertNpArrayEquals(model.parameters['W1'], expected_W1)
+        self.assertNpArrayEquals(model.parameters['b1'], expected_b1)
+        self.assertNpArrayEquals(model.parameters['W2'], expected_W2)
+        self.assertNpArrayEquals(model.parameters['b2'], expected_b2)
     
     def test_forward_propagation(self):
         X, parameters, layer_dims, expected_AL = test_cases.L_model_forward_test_case_2hidden()
@@ -51,7 +52,7 @@ class TestNN(unittest.TestCase):
 
         AL, caches = model.forward_propagatation(X)
 
-        self.assertDeepEquals(AL, expected_AL)
+        self.assertNpArrayEquals(AL, expected_AL)
         self.assertEqual(len(caches), 3)
     
     def test_back_prop(self):
@@ -60,9 +61,27 @@ class TestNN(unittest.TestCase):
 
         grads = model.back_propagation(AL, Y_assess, caches)
 
-        self.assertDeepEquals(grads['dW1'], expected_dW1)
-        self.assertDeepEquals(grads['db1'], expected_db1)
-        self.assertDeepEquals(grads['dA1'], expected_dA1)
+        self.assertNpArrayEquals(grads['dW1'], expected_dW1)
+        self.assertNpArrayEquals(grads['db1'], expected_db1)
+        self.assertNpArrayEquals(grads['dA1'], expected_dA1)
+    
+    def test_L2_regularization_cost(self):
+        A3, Y_assess, parameters, layer_dims, l2_lambda, expected_cost = test_cases.compute_cost_with_regularization_test_case()
+
+        model = nn.NN(layer_dims, l2_lambda=l2_lambda)
+        model.parameters = parameters
+        cost = model.compute_cost(A3, Y_assess)
+        self.assertAlmostEqual(cost, expected_cost)
+    
+    def test_L2_regularization_back_prop(self):
+        AL_assess, Y_assess, caches, layer_dims, l2_lambda, expected_dW1, expected_dW2, expected_dW3 = test_cases.backward_propagation_with_regularization_test_case()
+
+        model = nn.NN(layer_dims, l2_lambda=l2_lambda)
+        grads = model.back_propagation(AL_assess, Y_assess, caches)
+
+        self.assertNpArrayEquals(grads['dW1'], expected_dW1, "dW1 mismatch")
+        self.assertNpArrayEquals(grads['dW2'], expected_dW2, "dW2 mismatch")
+        self.assertNpArrayEquals(grads['dW3'], expected_dW3, "dW3 mismatch")
 
 if __name__ == '__main__':
     unittest.main()
