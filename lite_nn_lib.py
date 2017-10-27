@@ -14,16 +14,18 @@ class NN:
     Implements fully-connected neural networks
     '''
 
-    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), l2_lambda=0.0):
+    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), l2_lambda=0.0, dropout_probs=None):
         self.L = len(layer_dims)
         self.layer_dims = layer_dims
         self.activation_fns = activation_fns if activation_fns is not None else [ReluLayer() for l in range(self.L - 2)] + [SigmoidLayer()] 
         self.cost_fn = cost_fn if cost_fn is not None else SigmoidCrossEntropy()
         self.initializer = initializer
         self.l2_lambda = l2_lambda
+        self.dropout_probs = dropout_probs + [0] if dropout_probs is not None else None
         self.parameters = {}
 
         assert (len(self.activation_fns) == len(self.layer_dims) - 1)
+        assert (dropout_probs is None or len(self.dropout_probs) == len(self.activation_fns))
     
     def initialize_params(self):
         '''
@@ -44,7 +46,7 @@ class NN:
 
         return Z, cache
 
-    def forward_propagatation(self, X):
+    def forward_propagatation(self, X, dropout=False):
         '''
         Computes the output of a full forward propagation
 
@@ -62,10 +64,16 @@ class NN:
 
             Z, linear_cache = NN.linear_forward(A_prev, W, b)
             A, activation_cache = self.activation_fns[l-1].forward(Z)
+            
+            # apply dropout
+            if dropout:
+                keep_prob = 1 - self.dropout_probs[l-1]
+                A, D = reg_utils.forward_dropout(A, keep_prob)
+                caches.append((linear_cache, activation_cache, D))
+            else:
+                caches.append((linear_cache, activation_cache))
 
             assert (A.shape == (W.shape[0], A_prev.shape[1]))
-
-            caches.append((linear_cache, activation_cache))
         
         return A, caches
     
@@ -99,7 +107,7 @@ class NN:
 
         return dA_prev, dW, db
     
-    def back_propagation(self, AL, Y, caches):
+    def back_propagation(self, AL, Y, caches, dropout=False):
         '''
         Computes the gradients of all parameters
         '''
@@ -109,8 +117,14 @@ class NN:
         dA = self.compute_cost_derivative(AL, Y)
 
         for l in reversed(range(1, self.L)):
-            linear_cache, activation_cache = caches[l-1]
-            
+            if dropout:
+                linear_cache, activation_cache, D = caches[l-1]
+                # apply dropout
+                keep_prob = 1 - self.dropout_probs[l-1]
+                dA = reg_utils.backward_dropout(dA, keep_prob, D)
+            else:
+                linear_cache, activation_cache = caches[l-1]
+
             dZ = self.activation_fns[l-1].backward(dA, activation_cache)
             dA_prev, dW, db = NN.linear_backward(dZ, linear_cache, self.l2_lambda)
 
@@ -132,6 +146,7 @@ class NN:
     
     def fit(self, X, Y, learning_rate = 0.0075, num_iterations = 3000, print_cost=False):
         costs = []
+        use_dropout = self.dropout_probs is not None
 
         # initialize params
         self.initialize_params()
@@ -140,13 +155,13 @@ class NN:
         for i in range(num_iterations):
 
             # forward propagation
-            AL, caches = self.forward_propagatation(X)
+            AL, caches = self.forward_propagatation(X, dropout=use_dropout)
 
             # compute cost
             cost = self.compute_cost(AL, Y)
 
             # back propagation
-            grads = self.back_propagation(AL, Y, caches)
+            grads = self.back_propagation(AL, Y, caches, dropout=use_dropout)
 
             # update params
             self.update_parameters(grads, learning_rate)
@@ -166,4 +181,4 @@ class NN:
     
     def score(self, X, Y, threshold=0.5):
         predictions = self.predict(X, threshold)
-        return np.sum(predictions == Y) / predictions.size
+        return np.average(predictions == Y)

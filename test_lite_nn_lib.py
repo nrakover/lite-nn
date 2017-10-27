@@ -20,7 +20,7 @@ class TestNN(unittest.TestCase):
         Y, AL, expected = test_cases.compute_cost_test_case()
         model = nn.NN([1, Y.shape[0]])
         cost = model.compute_cost(AL, Y)
-        self.assertAlmostEqual(expected, cost, places=16)
+        self.assertAlmostEqual(expected, cost)
     
     def test_linear_forward(self):
         A, W, b, expected = test_cases.linear_forward_test_case()
@@ -82,6 +82,24 @@ class TestNN(unittest.TestCase):
         self.assertNpArrayEquals(grads['dW1'], expected_dW1, "dW1 mismatch")
         self.assertNpArrayEquals(grads['dW2'], expected_dW2, "dW2 mismatch")
         self.assertNpArrayEquals(grads['dW3'], expected_dW3, "dW3 mismatch")
+    
+    def test_forward_prop_with_dropout(self):
+        X_assess, parameters, layer_dims, dropout_probs, expected_AL = test_cases.forward_propagation_with_dropout_test_case()
+
+        model = nn.NN(layer_dims, dropout_probs=dropout_probs)
+        model.parameters = parameters
+
+        AL, _ = model.forward_propagatation(X_assess, dropout=True)
+        self.assertNpArrayEquals(expected_AL, AL)
+    
+    def test_back_prop_with_dropout(self):
+        X_assess, Y_assess, AL, caches, layer_dims, dropout_probs, expected_dA1, expected_dA2 = test_cases.backward_propagation_with_dropout_test_case()
+
+        model = nn.NN(layer_dims, dropout_probs=dropout_probs)
+        
+        grads = model.back_propagation(AL, Y_assess, caches, dropout=True)
+        self.assertNpArrayEquals(expected_dA1, grads['dA1'])
+        self.assertNpArrayEquals(expected_dA2, grads['dA2'])
 
 if __name__ == '__main__':
     unittest.main()
