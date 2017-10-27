@@ -6,19 +6,32 @@ This project is based on my experience with the *deeplearning.ai* [Deep Learning
 
 The library is meant to be an ultra-portable, minimal-dependency tool for testing out and iterating on ideas. It is designed to be easy to use, with familiar APIs and sensible defaults, while also offering a useful level of configurability and extensibility.
 
-The implementation is heavily vectorized.
+The implementation makes extensive use of vectorization via numpy. All operations that scale with the number of examples and/or with the number of features/hidden-units are vectorized.
 
 ## Features
 - fully-connected neural nets of configurable depth and height
 - regularization:
   - L2 / weight-decay
   - dropout (per layer)
-- configurable options:
-  - weight initializers
-  - activation functions
-  - cost functions
-  - mini-batch size [COMING SOON]
-  - gradient optimizers [COMING SOON]
+- weight initializers:
+  - sample from zero-mean normal
+  - Xavier et al.
+  - He et al.
+- activation functions:
+  - ReLU
+  - sigmoid
+  - softmax [COMING SOON]
+  - tanh [COMING SOON]
+- cost functions:
+  - sigmoid cross-entropy
+  - softmax cross-entropy [COMING SOON]
+- mini-batch size [COMING SOON]
+- gradient optimizers:
+  - vanilla batch GD
+  - momentum [COMING SOON]
+  - RMSProp [COMING SOON]
+  - Adam [COMING SOON]
+- batch normalization [COMING SOON]
 
 ## Dependencies
 - python3
