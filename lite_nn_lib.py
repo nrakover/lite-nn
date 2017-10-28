@@ -8,6 +8,7 @@ from activation_layers import SigmoidLayer, ReluLayer
 from cost_functions import SigmoidCrossEntropy
 from initilizers import HeInit
 import utils.regularization as reg_utils
+import utils.gradient_descent as gd
 
 class NN:
     '''
@@ -27,6 +28,54 @@ class NN:
         assert (len(self.activation_fns) == len(self.layer_dims) - 1)
         assert (dropout_probs is None or len(self.dropout_probs) == len(self.activation_fns))
     
+    def fit(self, X, Y, learning_rate = 0.0075, num_iterations = 3000, mini_batche_size=None, random_seed=None, print_cost=False):
+        costs = []
+        use_dropout = self.dropout_probs is not None
+
+        # initialize params
+        self.initialize_params()
+
+        # create mini-batches
+        mini_batche_size = mini_batche_size or X.shape[1] 
+        mini_batches = gd.random_mini_batches(X, Y, mini_batch_size=mini_batche_size, seed=random_seed)
+
+        # perform num_iterations of gradient descent
+        i = 0
+        for epoch in range(num_iterations):
+
+            # perform mini-batch gradient descent on each mini-batch
+            for (mini_X, mini_Y) in mini_batches:
+
+                # forward propagation
+                AL, caches = self.forward_propagatation(mini_X, dropout=use_dropout)
+
+                # compute cost
+                cost = self.compute_cost(AL, mini_Y)
+
+                # back propagation
+                grads = self.back_propagation(AL, mini_Y, caches, dropout=use_dropout)
+
+                # update params
+                self.update_parameters(grads, learning_rate)
+
+                costs.append(cost)
+                # Print the cost every 100 training example
+                if print_cost and i % 100 == 0:
+                    print ("Cost after iteration %i: %f" %(i, cost))
+                i+=1
+        
+        return self.parameters.copy(), costs
+    
+    def predict(self, X, threshold=0.5):
+        AL, _ = self.forward_propagatation(X)
+        predictions = (AL > threshold) * 1
+
+        return predictions
+    
+    def score(self, X, Y, threshold=0.5):
+        predictions = self.predict(X, threshold)
+        return np.average(predictions == Y)
+
     def initialize_params(self):
         '''
         Initialize model parameters
@@ -143,42 +192,3 @@ class NN:
         for l in range(1, self.L):
             self.parameters['W' + str(l)] = self.parameters['W' + str(l)] - learning_rate * grads['dW' + str(l)]
             self.parameters['b' + str(l)] = self.parameters['b' + str(l)] - learning_rate * grads['db' + str(l)]
-    
-    def fit(self, X, Y, learning_rate = 0.0075, num_iterations = 3000, print_cost=False):
-        costs = []
-        use_dropout = self.dropout_probs is not None
-
-        # initialize params
-        self.initialize_params()
-
-        # perform num_iterations of batch gradient descent
-        for i in range(num_iterations):
-
-            # forward propagation
-            AL, caches = self.forward_propagatation(X, dropout=use_dropout)
-
-            # compute cost
-            cost = self.compute_cost(AL, Y)
-
-            # back propagation
-            grads = self.back_propagation(AL, Y, caches, dropout=use_dropout)
-
-            # update params
-            self.update_parameters(grads, learning_rate)
-
-            costs.append(cost)
-            # Print the cost every 100 training example
-            if print_cost and i % 100 == 0:
-                print ("Cost after iteration %i: %f" %(i, cost))
-        
-        return self.parameters.copy(), costs
-    
-    def predict(self, X, threshold=0.5):
-        AL, _ = self.forward_propagatation(X)
-        predictions = (AL > threshold) * 1
-
-        return predictions
-    
-    def score(self, X, Y, threshold=0.5):
-        predictions = self.predict(X, threshold)
-        return np.average(predictions == Y)
