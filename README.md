@@ -25,12 +25,12 @@ The implementation makes extensive use of vectorization via numpy. All operation
 - cost functions:
   - sigmoid cross-entropy
   - softmax cross-entropy [COMING SOON]
-- mini-batch size [COMING SOON]
+- mini-batch size
 - gradient optimizers:
   - vanilla batch GD
   - momentum [COMING SOON]
   - RMSProp [COMING SOON]
-  - Adam [COMING SOON]
+  - Adam
 - batch normalization [COMING SOON]
 
 ## Dependencies
