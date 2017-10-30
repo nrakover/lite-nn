@@ -30,10 +30,10 @@ class NN:
         assert (len(self.activation_fns) == len(self.layer_dims) - 1)
         assert (dropout_probs is None or len(self.dropout_probs) == len(self.activation_fns))
     
-    def fit(self, X, Y, learning_rate = 0.0075, num_iterations = 3000, mini_batche_size=None, random_seed=None, print_cost=False):
+    def fit(self, X, Y, learning_rate=0.0075, num_epochs=3000, mini_batch_size=None, random_seed=None, print_cost=False):
         costs = []
         use_dropout = self.dropout_probs is not None
-        mini_batche_size = mini_batche_size or X.shape[1]
+        mini_batch_size = mini_batch_size or X.shape[1]
         mini_batch_seed = random_seed
 
         # initialize params
@@ -42,13 +42,13 @@ class NN:
         # initialize optimizer
         self.optimizer.initialize(self.L, self.layer_dims)
 
-        # perform num_iterations epochs of gradient descent
+        # perform num_epochs of gradient descent
         i = 0 # gradient descent counter
-        for epoch in range(num_iterations):
+        for epoch in range(num_epochs):
 
             # create mini-batches
             mini_batch_seed = None if mini_batch_seed is None else mini_batch_seed + 1
-            mini_batches = gd.random_mini_batches(X, Y, mini_batch_size=mini_batche_size, seed=mini_batch_seed)
+            mini_batches = gd.random_mini_batches(X, Y, mini_batch_size=mini_batch_size, seed=mini_batch_seed)
 
             # perform mini-batch gradient descent on each mini-batch
             for (mini_X, mini_Y) in mini_batches:
