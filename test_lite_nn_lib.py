@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 
 import lite_nn_lib as nn
+import optimizers
 import test_utils.coursera_test_cases as test_cases
 
 class TestNN(unittest.TestCase):
@@ -100,6 +101,30 @@ class TestNN(unittest.TestCase):
         grads = model.back_propagation(AL, Y_assess, caches, dropout=True)
         self.assertNpArrayEquals(expected_dA1, grads['dA1'])
         self.assertNpArrayEquals(expected_dA2, grads['dA2'])
+    
+    def test_adam_parameter_update(self):
+        parameters, grads, learning_rate, L, v, s, t, beta1, beta2, epsilon, expected_W1, expected_b1, expected_W2, expected_b2, expected_V_dW1, expected_V_db1, expected_V_dW2, expected_V_db2, expected_S_dW1, expected_S_db1, expected_S_dW2, expected_S_db2 = test_cases.update_parameters_with_adam_test_case()
+
+        adam = optimizers.Adam(beta1, beta2, epsilon)
+        adam.t = t
+        adam.V = v
+        adam.S = s
+
+        new_parameters = adam.gradient_step(L, parameters, grads, learning_rate)
+        self.assertNpArrayEquals(expected_W1, new_parameters['W1'])
+        self.assertNpArrayEquals(expected_b1, new_parameters['b1'])
+        self.assertNpArrayEquals(expected_W2, new_parameters['W2'])
+        self.assertNpArrayEquals(expected_b2, new_parameters['b2'])
+
+        self.assertNpArrayEquals(expected_V_dW1, adam.V['dW1'])
+        self.assertNpArrayEquals(expected_V_db1, adam.V['db1'])
+        self.assertNpArrayEquals(expected_V_dW2, adam.V['dW2'])
+        self.assertNpArrayEquals(expected_V_db2, adam.V['db2'])
+
+        self.assertNpArrayEquals(expected_S_dW1, adam.S['dW1'])
+        self.assertNpArrayEquals(expected_S_db1, adam.S['db1'])
+        self.assertNpArrayEquals(expected_S_dW2, adam.S['dW2'])
+        self.assertNpArrayEquals(expected_S_db2, adam.S['db2'])
 
 if __name__ == '__main__':
     unittest.main()

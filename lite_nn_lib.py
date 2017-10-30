@@ -7,6 +7,7 @@ import numpy as np
 from activation_layers import SigmoidLayer, ReluLayer
 from cost_functions import SigmoidCrossEntropy
 from initilizers import HeInit
+from optimizers import VanillaOptimizer
 import utils.regularization as reg_utils
 import utils.gradient_descent as gd
 
@@ -15,12 +16,13 @@ class NN:
     Implements fully-connected neural networks
     '''
 
-    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), l2_lambda=0.0, dropout_probs=None):
+    def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), optimizer=VanillaOptimizer(), l2_lambda=0.0, dropout_probs=None):
         self.L = len(layer_dims)
         self.layer_dims = layer_dims
         self.activation_fns = activation_fns if activation_fns is not None else [ReluLayer() for l in range(self.L - 2)] + [SigmoidLayer()] 
         self.cost_fn = cost_fn if cost_fn is not None else SigmoidCrossEntropy()
         self.initializer = initializer
+        self.optimizer = optimizer
         self.l2_lambda = l2_lambda
         self.dropout_probs = dropout_probs + [0] if dropout_probs is not None else None
         self.parameters = {}
@@ -31,17 +33,22 @@ class NN:
     def fit(self, X, Y, learning_rate = 0.0075, num_iterations = 3000, mini_batche_size=None, random_seed=None, print_cost=False):
         costs = []
         use_dropout = self.dropout_probs is not None
+        mini_batche_size = mini_batche_size or X.shape[1]
+        mini_batch_seed = random_seed
 
         # initialize params
         self.initialize_params()
 
-        # create mini-batches
-        mini_batche_size = mini_batche_size or X.shape[1] 
-        mini_batches = gd.random_mini_batches(X, Y, mini_batch_size=mini_batche_size, seed=random_seed)
+        # initialize optimizer
+        self.optimizer.initialize(self.L, self.layer_dims)
 
-        # perform num_iterations of gradient descent
-        i = 0
+        # perform num_iterations epochs of gradient descent
+        i = 0 # gradient descent counter
         for epoch in range(num_iterations):
+
+            # create mini-batches
+            mini_batch_seed = None if mini_batch_seed is None else mini_batch_seed + 1
+            mini_batches = gd.random_mini_batches(X, Y, mini_batch_size=mini_batche_size, seed=mini_batch_seed)
 
             # perform mini-batch gradient descent on each mini-batch
             for (mini_X, mini_Y) in mini_batches:
@@ -189,6 +196,4 @@ class NN:
         '''
         Updates model parameters given the gradients and learning rate
         '''
-        for l in range(1, self.L):
-            self.parameters['W' + str(l)] = self.parameters['W' + str(l)] - learning_rate * grads['dW' + str(l)]
-            self.parameters['b' + str(l)] = self.parameters['b' + str(l)] - learning_rate * grads['db' + str(l)]
+        self.parameters = self.optimizer.gradient_step(self.L, self.parameters, grads, learning_rate)
