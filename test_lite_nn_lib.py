@@ -125,10 +125,6 @@ class TestNN(unittest.TestCase):
         self.assertNpArrayEquals(expected_S_db1, adam.S['db1'])
         self.assertNpArrayEquals(expected_S_dW2, adam.S['dW2'])
         self.assertNpArrayEquals(expected_S_db2, adam.S['db2'])
-    
-    def test_cirleci(self):
-        # this should show a build fail
-        self.assertTrue(False)
 
 if __name__ == '__main__':
     unittest.main()
