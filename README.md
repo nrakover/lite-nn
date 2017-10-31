@@ -1,4 +1,7 @@
 # lite-nn
+
+[![CircleCI](https://circleci.com/gh/nrakover/lite-nn.svg?style=shield)](https://circleci.com/gh/nrakover/lite-nn)
+
 Lightweight neural networks library written entirely in Python3 and numpy
 
 ## Overview
