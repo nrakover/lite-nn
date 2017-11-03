@@ -47,3 +47,20 @@ class ReluLayer(ActivationLayer):
     @staticmethod
     def backward(dA, activation_cache):
         return act.relu_backward(dA, activation_cache)
+
+class SoftmaxOutputLayer(ActivationLayer):
+    """
+    NOTE: this activation layer can only be used as the *final* layer
+    """
+    @staticmethod
+    def forward(Z):
+        return act.softmax(Z)
+    
+    @staticmethod
+    def backward(dZ, activation_cache):
+        """
+        NOTE: this is a bit of a hack, since we're actually passing dZ masquerading as dA
+        This assumes that the softmax layer is used exclusively as the final layer, in
+        conjunction with the softmax cross-entropy cost function
+        """
+        return dZ

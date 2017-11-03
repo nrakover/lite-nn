@@ -30,7 +30,7 @@ def relu(Z):
 
     Returns:
     A -- Post-activation parameter, of the same shape as Z
-    cache -- a python dictionary containing "A" ; stored for computing the backward pass efficiently
+    cache -- a python dictionary containing "Z" ; stored for computing the backward pass efficiently
     """
     
     A = np.maximum(0,Z)
@@ -83,3 +83,23 @@ def sigmoid_backward(dA, cache):
     assert (dZ.shape == Z.shape)
     
     return dZ
+
+def softmax(Z):
+    """
+    Implement the softmax function.
+
+    Arguments:
+    Z -- Output of the linear layer, of any shape
+
+    Returns:
+    A -- Post-activation parameter, of the same shape as Z
+    cache -- a python dictionary containing "Z" ; stored for computing the backward pass efficiently
+    """
+    T = np.exp(Z)
+    normalization_term = np.sum(T, axis=0, keepdims=True)
+    A = T / normalization_term
+
+    assert (A.shape == Z.shape)
+
+    cache = ()
+    return A, cache

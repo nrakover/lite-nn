@@ -30,3 +30,17 @@ class SigmoidCrossEntropy(CostFunction):
     @staticmethod
     def compute_cost_derivative(AL, Y):
         return cost.sigmoid_cross_entropy_dAL(AL, Y)
+
+class SoftmaxCrossEntropy(CostFunction):
+    """
+    NOTE: this cost function can only be used with the softmax activation in the final layer
+    """
+    @staticmethod
+    def compute_cost(AL, Y):
+        return cost.softmax_cross_entropy_cost(AL, Y)
+    @staticmethod
+    def compute_cost_derivative(AL, Y):
+        """
+        NOTE: this is a bit of a hack, where we actually compute the cost with respect to Z directly
+        """
+        return cost.softmax_cross_entropy_dZ(AL, Y)

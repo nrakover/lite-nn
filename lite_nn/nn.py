@@ -4,12 +4,9 @@ Simple NN library
 
 import numpy as np
 
-from .activation_layers import SigmoidLayer, ReluLayer
-from .cost_functions import SigmoidCrossEntropy
 from .initilizers import HeInit
 from .optimizers import VanillaOptimizer
-from .utils import regularization as reg_utils
-from .utils import gradient_descent as gd
+from .utils import regularization as reg_utils, gradient_descent as gd, defaults
 
 class NN:
     '''
@@ -19,8 +16,8 @@ class NN:
     def __init__(self, layer_dims, activation_fns=None, cost_fn=None, initializer=HeInit(), optimizer=VanillaOptimizer(), l2_lambda=0.0, dropout_probs=None):
         self.L = len(layer_dims)
         self.layer_dims = layer_dims
-        self.activation_fns = activation_fns if activation_fns is not None else [ReluLayer() for l in range(self.L - 2)] + [SigmoidLayer()] 
-        self.cost_fn = cost_fn if cost_fn is not None else SigmoidCrossEntropy()
+        self.activation_fns = activation_fns if activation_fns is not None else defaults.default_activations(layer_dims)
+        self.cost_fn = cost_fn if cost_fn is not None else defaults.default_cost_function(layer_dims[-1])
         self.initializer = initializer
         self.optimizer = optimizer
         self.l2_lambda = l2_lambda
