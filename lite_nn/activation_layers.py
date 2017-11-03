@@ -30,7 +30,7 @@ class ActivationLayer:
 #######     Implementations     #######
 #######################################
 
-import utils.activation as act
+from .utils import activation as act
 
 class SigmoidLayer(ActivationLayer):
     @staticmethod

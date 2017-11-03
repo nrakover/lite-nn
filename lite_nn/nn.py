@@ -4,12 +4,12 @@ Simple NN library
 
 import numpy as np
 
-from activation_layers import SigmoidLayer, ReluLayer
-from cost_functions import SigmoidCrossEntropy
-from initilizers import HeInit
-from optimizers import VanillaOptimizer
-import utils.regularization as reg_utils
-import utils.gradient_descent as gd
+from .activation_layers import SigmoidLayer, ReluLayer
+from .cost_functions import SigmoidCrossEntropy
+from .initilizers import HeInit
+from .optimizers import VanillaOptimizer
+from .utils import regularization as reg_utils
+from .utils import gradient_descent as gd
 
 class NN:
     '''

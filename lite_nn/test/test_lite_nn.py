@@ -5,9 +5,9 @@ Basic unit tests for simple_nn_lib.py
 import unittest
 import numpy as np
 
-import lite_nn_lib as nn
-import optimizers
-import test_utils.coursera_test_cases as test_cases
+import lite_nn.nn as nn
+import lite_nn.optimizers as optimizers
+import lite_nn.test.test_utils.coursera_test_cases as test_cases
 
 class TestNN(unittest.TestCase):
     

@@ -21,7 +21,7 @@ class CostFunction:
 #######     Implementations     #######
 #######################################
 
-import utils.cost as cost
+from .utils import cost as cost
 
 class SigmoidCrossEntropy(CostFunction):
     @staticmethod
