@@ -34,7 +34,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python lite_nn/test/test_lite_nn.py
+            python -m lite_nn.test.test_lite_nn
 
       - store_artifacts:
           path: test-reports
