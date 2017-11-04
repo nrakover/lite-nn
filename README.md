@@ -23,11 +23,11 @@ The implementation makes extensive use of vectorization via numpy. All operation
 - activation functions:
   - ReLU
   - sigmoid
-  - softmax [COMING SOON]
+  - softmax
   - tanh [COMING SOON]
 - cost functions:
   - sigmoid cross-entropy
-  - softmax cross-entropy [COMING SOON]
+  - softmax cross-entropy
 - mini-batch size
 - gradient optimizers:
   - vanilla batch GD
